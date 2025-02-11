@@ -3,32 +3,27 @@ package main
 import (
 	"minurl/handlers"
 	"minurl/middleware"
-	"net/http"
-
+	// "net/http"
+"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"time"
 )
 
-func CORSMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*") // Allow all origins
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
-		// Handle preflight OPTIONS request
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(http.StatusOK)
-			return
-		}
-
-		c.Next()
-	}
-}
 
 func main() {
 	route := gin.Default()
 
 
-	route.Use(CORSMiddleware())
+	route.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:5174"}, // Change this to your frontend URL
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
+
 
 	// Public Routes
 	route.POST("/register", handlers.Register)
@@ -39,12 +34,14 @@ func main() {
 	auth.Use(middleware.Authmiddleware())
 	{
 		auth.POST("/shorten", handlers.ShortenURL)
+		auth.GET("/urls", handlers.GetUserLinks)
 
 	}
 
 	// Public Route for Redirection
 	route.GET("/:short", handlers.RedirectURL)
-	route.GET("clicks/:short", handlers.GetClickCount)
+	// route.GET("clicks/:short", handlers.GetClickCount)
+	
 
 	// Start the server
 	route.Run(":8080")
