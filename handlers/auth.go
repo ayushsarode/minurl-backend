@@ -1,6 +1,7 @@
 package handlers
 
 import (
+
 	"minurl/models"
 	"minurl/utils"
 	"net/http"
@@ -53,7 +54,7 @@ func Login(c *gin.Context) {
 
 	collection := utils.GetCollection("users")
 
-	err := collection.FindOne(c, gin.H{"username": user.Username}).Decode(&dbUser)
+	err := collection.FindOne(c, gin.H{"email": user.Email}).Decode(&dbUser)
 
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
@@ -65,13 +66,23 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	token, err := utils.GenerateToken(dbUser.ID)
+	token, err := utils.GenerateToken(dbUser.ID.Hex()) // Convert ObjectID to string
+if err != nil {
+    c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
+    return
+}
+
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not ge\nerate token"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	c.JSON(http.StatusOK, gin.H{"token": token, "user": gin.H{
+		"id": dbUser.ID.Hex(),
+		"name": dbUser.Username,
+		"email": dbUser.Email,
+	}})
 
 }
+
