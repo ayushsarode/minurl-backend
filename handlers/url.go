@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bytes"
 	"context"
 	"crypto/rand"
 	"encoding/base64"
@@ -15,8 +16,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/oklog/ulid/v2"
+	"github.com/skip2/go-qrcode"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // Shorten URL
@@ -47,6 +50,7 @@ func ShortenURL(c *gin.Context) {
 
 	url.UserID = c.GetString("userID")
 	url.Clicks = 0
+    url.CreatedAt = time.Now()
 
 	_, err := collection.InsertOne(c, url)
 	if err != nil {
@@ -111,7 +115,7 @@ func GetUserLinks(c *gin.Context) {
     
     var urls []models.URL
     // Changed "user_id" to "userID" to match the model's bson tag
-    cursor, err := collection.Find(context.TODO(), bson.M{"userID": userID})
+    cursor, err := collection.Find(context.TODO(), bson.M{"userID": userID}, options.Find().SetSort(bson.M{"createdAt": -1}))
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve URLs"})
         return
@@ -131,4 +135,94 @@ func GetUserLinks(c *gin.Context) {
         "urls": urls,
         "count": len(urls),
     })
+}
+
+func DeleteURL(c *gin.Context) {
+    // Get URL ID from parameters
+    shortCode := c.Param("short")
+    if shortCode == "" {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Short code is required"})
+        return
+    }
+
+    // Get userID from context (set by auth middleware)
+    userID := c.GetString("userID")
+    if userID == "" {
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+        return
+    }
+
+    collection := utils.GetCollection("urls")
+
+    // Delete URL ensuring it belongs to the user
+    result, err := collection.DeleteOne(context.TODO(), bson.M{
+        "short":  shortCode,
+        "userID": userID,
+    })
+
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete URL"})
+        return
+    }
+
+    if result.DeletedCount == 0 {
+        c.JSON(http.StatusNotFound, gin.H{"error": "URL not found or unauthorized"})
+        return
+    }
+
+    c.JSON(http.StatusOK, gin.H{
+        "message": "URL deleted successfully",
+    })
+}
+
+
+func GenerateQRCode(c *gin.Context) {
+    // Get the short URL code from the request parameters
+    shortCode := c.Param("short")
+    if shortCode == "" {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Short code is required"})
+        return
+    }
+
+    // Get the collection
+    collection := utils.GetCollection("urls")
+
+    // Find the URL in the database
+    var url models.URL
+    err := collection.FindOne(c, bson.M{"short": shortCode}).Decode(&url)
+    if err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "URL not found"})
+        return
+    }
+
+    // Generate the full URL for the QR code
+    fullURL := fmt.Sprintf("http://localhost:8080/%s", shortCode) // Replace with your domain
+
+    // Generate QR code
+    var qr *qrcode.QRCode
+    qr, err = qrcode.New(fullURL, qrcode.Medium)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate QR code"})
+        return
+    }
+
+    // Create a buffer to store the PNG
+    var buf bytes.Buffer
+    err = qr.Write(256, &buf) // 256x256 pixels
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate QR code image"})
+        return
+    }
+
+    // Set content type header
+    c.Header("Content-Type", "image/png")
+    c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.png\"", shortCode))
+    
+    // Set CORS headers if needed
+    c.Header("Access-Control-Allow-Origin", "http://localhost:5174")
+    c.Header("Access-Control-Allow-Methods", "GET, OPTIONS")
+    c.Header("Access-Control-Allow-Headers", "Origin, Content-Type")
+
+    // Write the image to the response
+    c.Data(http.StatusOK, "image/png", buf.Bytes())
 }

@@ -35,11 +35,14 @@ func main() {
 	{
 		auth.POST("/shorten", handlers.ShortenURL)
 		auth.GET("/urls", handlers.GetUserLinks)
+		
 
 	}
 
 	// Public Route for Redirection
 	route.GET("/:short", handlers.RedirectURL)
+	route.GET("/qr/:short", handlers.GenerateQRCode)
+	route.DELETE("/urls/:short", handlers.DeleteURL)
 	// route.GET("clicks/:short", handlers.GetClickCount)
 	
 
