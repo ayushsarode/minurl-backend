@@ -94,7 +94,7 @@ func RedirectURL(c *gin.Context) {
 	}
 
 	// CORS Headers
-	c.Header("Access-Control-Allow-Origin", "http://localhost:5174")
+	c.Header("Access-Control-Allow-Origin", "http://localhost:5173")
 	c.Header("Access-Control-Allow-Methods", "GET, OPTIONS")
 	c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization")
 
@@ -148,9 +148,12 @@ func DeleteURL(c *gin.Context) {
     // Get userID from context (set by auth middleware)
     userID := c.GetString("userID")
     if userID == "" {
+        fmt.Println("[ERROR] Unauthorized request: Missing userID in context")
         c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
         return
     }
+
+    fmt.Println("[INFO] Deleting URL:", shortCode, "for user:", userID)
 
     collection := utils.GetCollection("urls")
 
@@ -161,19 +164,23 @@ func DeleteURL(c *gin.Context) {
     })
 
     if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete URL"})
+        fmt.Printf("[ERROR] Failed to delete URL: %v\n", err)
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete URL", "details": err.Error()})
         return
     }
 
     if result.DeletedCount == 0 {
+        fmt.Println("[WARNING] URL not found or unauthorized:", shortCode)
         c.JSON(http.StatusNotFound, gin.H{"error": "URL not found or unauthorized"})
         return
     }
 
+    fmt.Println("[SUCCESS] URL deleted:", shortCode)
     c.JSON(http.StatusOK, gin.H{
         "message": "URL deleted successfully",
     })
 }
+
 
 
 func GenerateQRCode(c *gin.Context) {

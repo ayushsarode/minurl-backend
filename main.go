@@ -16,7 +16,7 @@ func main() {
 
 
 	route.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5174"}, // Change this to your frontend URL
+		AllowOrigins:     []string{"http://localhost:5173"}, // Change this to your frontend URL
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -35,6 +35,7 @@ func main() {
 	{
 		auth.POST("/shorten", handlers.ShortenURL)
 		auth.GET("/urls", handlers.GetUserLinks)
+		auth.DELETE("/urls/:short", handlers.DeleteURL)
 		
 
 	}
@@ -42,7 +43,7 @@ func main() {
 	// Public Route for Redirection
 	route.GET("/:short", handlers.RedirectURL)
 	route.GET("/qr/:short", handlers.GenerateQRCode)
-	route.DELETE("/urls/:short", handlers.DeleteURL)
+	
 	// route.GET("clicks/:short", handlers.GetClickCount)
 	
 
