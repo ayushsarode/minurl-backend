@@ -36,8 +36,7 @@ func main() {
 		auth.POST("/shorten", handlers.ShortenURL)
 		auth.GET("/urls", handlers.GetUserLinks)
 		auth.DELETE("/urls/:short", handlers.DeleteURL)
-		
-
+		auth.POST("/upload/:id", handlers.UploadProfilePic)
 	}
 
 	// Public Route for Redirection
