@@ -8,8 +8,8 @@ import (
 	"fmt"
 
 	// "fmt"
-	"minurl/models"
-	"minurl/utils"
+    "github.com/ayushsarode/minurl-backend/utils"
+    "github.com/ayushsarode/minurl-backend/models"
 	"net/http"
 	"strings"
 	"time"
@@ -225,10 +225,6 @@ func GenerateQRCode(c *gin.Context) {
     c.Header("Content-Type", "image/png")
     c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s.png\"", shortCode))
     
-    // Set CORS headers if needed
-    c.Header("Access-Control-Allow-Origin", "http://localhost:5174")
-    c.Header("Access-Control-Allow-Methods", "GET, OPTIONS")
-    c.Header("Access-Control-Allow-Headers", "Origin, Content-Type")
 
     // Write the image to the response
     c.Data(http.StatusOK, "image/png", buf.Bytes())

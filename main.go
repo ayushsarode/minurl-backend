@@ -1,8 +1,9 @@
 package main
 
 import (
-	"minurl/handlers"
-	"minurl/middleware"
+	"github.com/ayushsarode/minurl-backend/handlers"
+	"github.com/ayushsarode/minurl-backend/middleware"
+
 	// "net/http"
 "github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -18,11 +19,14 @@ func main() {
 	route.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:5173"}, // Change this to your frontend URL
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
+
+
+	route.Static("/uploads", "./uploads")
 
 
 	// Public Routes
@@ -42,9 +46,7 @@ func main() {
 	// Public Route for Redirection
 	route.GET("/:short", handlers.RedirectURL)
 	route.GET("/qr/:short", handlers.GenerateQRCode)
-	
-	// route.GET("clicks/:short", handlers.GetClickCount)
-	
+
 
 	// Start the server
 	route.Run(":8080")

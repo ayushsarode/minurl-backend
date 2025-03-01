@@ -2,7 +2,7 @@ package middleware
 
 import (
 	// "fmt"
-	"minurl/utils"
+	"github.com/ayushsarode/minurl-backend/utils"
 	"net/http"
 	"strings"
 
