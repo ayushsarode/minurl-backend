@@ -1,13 +1,17 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/ayushsarode/minurl-backend/handlers"
 	"github.com/ayushsarode/minurl-backend/middleware"
 
 	// "net/http"
-"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
+	"os"
 	"time"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 )
 
 
@@ -48,6 +52,18 @@ func main() {
 	route.GET("/qr/:short", handlers.GenerateQRCode)
 
 
+	route.GET("/ping", func(c *gin.Context){
+		c.JSON(http.StatusOK, gin.H {
+			"message": "pong",
+		})
+	})
+
 	// Start the server
-	route.Run(":8080")
+
+    httpPort := os.Getenv("PORT")
+    if httpPort == "" {
+        httpPort = "8000"
+    }
+
+	route.Run(":" + httpPort)
 }
