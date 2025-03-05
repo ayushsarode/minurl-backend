@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/ayushsarode/minurl-backend/handlers"
@@ -17,7 +18,9 @@ import (
 
 
 func main() {
+	gin.SetMode(gin.ReleaseMode)
 	route := gin.Default()
+	log.Println("Cloudinary Cloud Name:", os.Getenv("CLOUDINARY_CLOUD_NAME"))
 
 
 	route.Use(cors.New(cors.Config{
