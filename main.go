@@ -62,7 +62,7 @@ func main() {
 
     httpPort := os.Getenv("PORT")
     if httpPort == "" {
-        httpPort = "8000"
+        httpPort = "8080"
     }
 
 	route.Run(":" + httpPort)
