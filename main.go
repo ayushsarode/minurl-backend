@@ -10,12 +10,12 @@ import (
 	"github.com/ayushsarode/minurl-backend/middleware"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
+	// "github.com/joho/godotenv"
 )
 
 func main() {
 	// Load .env file
-	godotenv.Load(); 
+	// godotenv.Load(); 
 
 	
 
