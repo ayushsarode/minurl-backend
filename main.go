@@ -10,14 +10,14 @@ import (
 	"github.com/ayushsarode/minurl-backend/middleware"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
+	// "github.com/joho/godotenv"
 )
 
 func main() {
 	// Load .env file
-	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found, using Render environment variables")
-	}
+	// if err := godotenv.Load(); err != nil {
+	// 	log.Println("No .env file found, using Render environment variables")
+	// }
 	
 
 
