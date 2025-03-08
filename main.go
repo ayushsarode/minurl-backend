@@ -16,8 +16,9 @@ import (
 func main() {
 	// Load .env file
 	if err := godotenv.Load(); err != nil {
-		log.Println("Error loading .env file, using environment variables")
+		log.Println("No .env file found, using Render environment variables")
 	}
+	
 
 
 	// Port configuration
@@ -35,7 +36,6 @@ func main() {
 	route.Use(cors.New(cors.Config{
 		AllowOrigins: []string{
 			"http://localhost:5173",
-			os.Getenv("FRONTEND_URL"), // Add your frontend URL from .env
 		},
 		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders: []string{"Origin", "Content-Type", "Authorization", "Accept"},
