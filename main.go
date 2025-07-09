@@ -8,17 +8,22 @@ import (
 
 	"github.com/ayushsarode/minurl-backend/handlers"
 	"github.com/ayushsarode/minurl-backend/middleware"
+	"github.com/ayushsarode/minurl-backend/utils"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	// "github.com/joho/godotenv"
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	// Load .env file
-	// godotenv.Load(); 
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("⚠️  .env file not found, using system environment variables")
+	}
 
-	
-
+	if err := utils.InitDB(); err != nil {
+		log.Fatalf("❌ Failed to connect to MongoDB: %v", err)
+	}
+	log.Println("✅ Connected to MongoDB")
 
 	// Port configuration
 	httpPort := os.Getenv("PORT")
@@ -34,13 +39,13 @@ func main() {
 	// CORS configuration
 	route.Use(cors.New(cors.Config{
 		AllowOrigins: []string{
-			"http://localhost:5173",
+			"https://minurl-frontend-shas-e7xcsyrzx-ayushsarodes-projects.vercel.app",
 		},
-		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders: []string{"Origin", "Content-Type", "Authorization", "Accept"},
-		ExposeHeaders: []string{"Content-Length"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept"},
+		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
-		MaxAge: 12 * time.Hour,
+		MaxAge:           12 * time.Hour,
 	}))
 
 	route.Static("/uploads", "./uploads")

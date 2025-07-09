@@ -8,17 +8,15 @@ import (
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"github.com/joho/godotenv"
 )
 
 var Client *mongo.Client
 
-func init() {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
+func InitDB() error {
 	uri := os.Getenv("MONGO_URI")
+	if uri == "" {
+		return Err("MONGO_URI not set")
+	}
 
 	clientOptions := options.Client().ApplyURI(uri)
 
@@ -27,12 +25,26 @@ func init() {
 
 	var err error
 	Client, err = mongo.Connect(ctx, clientOptions)
-
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	return nil
 }
 
 func GetCollection(name string) *mongo.Collection {
 	return Client.Database("urlshortener").Collection(name)
+}
+
+func Err(msg string) error {
+	log.Println("❌", msg)
+	return &customErr{msg}
+}
+
+type customErr struct {
+	msg string
+}
+
+func (e *customErr) Error() string {
+	return e.msg
 }
