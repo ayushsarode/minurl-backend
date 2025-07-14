@@ -40,6 +40,7 @@ func main() {
 	route.Use(cors.New(cors.Config{
 		AllowOrigins: []string{
 			"https://minurl-frontend-shas-e7xcsyrzx-ayushsarodes-projects.vercel.app",
+			"https://minurl-frontend-shas.vercel.app",
 		},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept"},

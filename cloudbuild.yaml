@@ -1,0 +1,39 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      [
+        'build',
+        '-t',
+        'us-central1-docker.pkg.dev/galvanic-tea-464714-j5/minurl-backend-repo/minurl-backend',
+        '.'
+      ]
+
+  - id: push-image
+    name: 'gcr.io/cloud-builders/docker'
+    args:
+      [
+        'push',
+        'us-central1-docker.pkg.dev/galvanic-tea-464714-j5/minurl-backend-repo/minurl-backend'
+      ]
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: bash
+    args:
+      - '-c'
+      - |
+        export MONGO_URI=$(gcloud secrets versions access latest --secret="mongo-uri")
+        export JWT_SECRET=$(gcloud secrets versions access latest --secret="jwt-secret")
+        export CLOUDINARY_CLOUD_NAME=$(gcloud secrets versions access latest --secret="cloudinary-cloud-name")
+        export CLOUDINARY_API_KEY=$(gcloud secrets versions access latest --secret="cloudinary-api-key")
+        export CLOUDINARY_API_SECRET=$(gcloud secrets versions access latest --secret="cloudinary-api-secret")
+
+        gcloud run deploy minurl-backend \
+          --image=us-central1-docker.pkg.dev/galvanic-tea-464714-j5/minurl-backend-repo/minurl-backend \
+          --platform=managed \
+          --region=us-central1 \
+          --allow-unauthenticated \
+          --set-env-vars=MONGO_URI=$MONGO_URI,JWT_SECRET=$JWT_SECRET,CLOUDINARY_CLOUD_NAME=$CLOUDINARY_CLOUD_NAME,CLOUDINARY_API_KEY=$CLOUDINARY_API_KEY,CLOUDINARY_API_SECRET=$CLOUDINARY_API_SECRET
+    waitFor: ['push-image']
+
+images:
+  - 'us-central1-docker.pkg.dev/galvanic-tea-464714-j5/minurl-backend-repo/minurl-backend'
